@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Ng Foursquare</title>
+    </head>
+    <body ng-app="fourSq" ng-controller="HomeController as vm">
+
+        <h1>Venues Near Me</h1>
+
+        <p>
+            Search for venue:
+            <form ng-submit="vm.changeQuery()">
+                <input type="text" ng-model="vm.queryType">
+                <input type="submit" value="Search">
+            </form>
+        </p>
+
+        <div ng-repeat="venue in vm.venues" style="border: 1px solid black; margin: 10px auto; padding: 20px;">
+            <h1 ng-bind="venue.name"></h1>
+            <a href="{{venue.url}}" ng-bind="venue.url"></a>
+            <p>
+                Phone # <span ng-bind="venue.contact.formattedPhone"></span>
+            </p>
+            <p ng-repeat="line in venue.location.formattedAddress" ng-bind="line"></p>
+        </div>
+
+    </body>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+
+    <script type="text/javascript">
+        (function() {
+
+            angular
+                .module('fourSq', [])
+                .controller('HomeController', HomeController)
+
+                function HomeController($http) {
+                    var vm = this
+
+                    vm.venues = []
+                    vm.currentPosition = {}
+                    vm.changeQuery = changeQuery
+
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        vm.currentPosition = position
+                        console.log(vm.currentPosition)
+                    })
+
+                    function changeQuery() {
+                        $http.get('https://api.foursquare.com/v2/venues/search?client_id=' + config.clientId + '&client_secret=' + config.clientSecret + '&v=20161111&ll=' + vm.currentPosition.coords.latitude + ',' + vm.currentPosition.coords.longitude + '&query=' + vm.queryType)
+                            .then(function(response) {
+                                return vm.venues = response.data.response.venues
+                            })
+                    }
+                }
+
+        }())
+    </script>
+
+    <script type="text/javascript" src="config.js"></script>
+
+
+</html>
